@@ -13,6 +13,13 @@ description: >-                      # 검색엔진(구글 등)에 노출될 블
 url: "https://la-boheme-host.github.io"   # 본인의 GitHub Pages 메인 도메인
 baseurl: "/la-boheme"                     # Repository 이름을 하위 경로로 입력 (앞에 / 필수)
 
+
+# 프로필 정보 (Chirpy 테마 좌측 사이드바용)
+author:
+  name: "La Bohème"
+  avatar: "/assets/images/avatar.jpg"
+  bio: "티스토리 블로그 이전 마이그레이션 진행 중"
+
 # =========================================================
 # 티스토리 숫자 URL 보존 설정
 # =========================================================
@@ -28,12 +35,18 @@ google_adsense:
 # =========================================================
 # 빌드 및 플러그인 설정
 # =========================================================
-theme: minima                        # 기본 디자인 테마
+theme: jekyll-theme-chirpy         # 치르피 테마
+
+# 언어 및 시간대 설정
+lang: ko-KR
+timezone: Asia/Seoul
+
+# 플러그인 및 빌드 설정
 plugins:
   - jekyll-feed
   - jekyll-seo-tag
+  - jekyll-sitemap
 
-# 빌드 시 결과물에서 제외할 폴더 및 파일 목록
 exclude:
   - Gemfile
   - Gemfile.lock
