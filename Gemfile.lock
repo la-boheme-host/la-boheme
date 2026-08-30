@@ -172,7 +172,7 @@ PLATFORMS
 
 DEPENDENCIES
   base64 (~> 0.3.0)
-  csv (~> 3.3)
+  csv
   jekyll (~> 4.3.0)
   jekyll-feed
   jekyll-paginate
@@ -182,7 +182,7 @@ DEPENDENCIES
   tzinfo (>= 1.2, < 3.0)
   tzinfo-data
   wdm (~> 0.1.1)
-  webrick (~> 1.9)
+  webrick
 
 CHECKSUMS
   addressable (2.9.0) sha256=7fdf6ac3660f7f4e867a0838be3f6cf722ace541dd97767fa42bc6cfa980c7af
