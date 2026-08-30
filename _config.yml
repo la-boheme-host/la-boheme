@@ -36,6 +36,8 @@ google_adsense:
 # 빌드 및 플러그인 설정
 # =========================================================
 theme: jekyll-theme-chirpy         # 치르피 테마
+paginate: 10
+future: true
 
 # 언어 및 시간대 설정
 lang: ko-KR
@@ -46,6 +48,18 @@ plugins:
   - jekyll-feed
   - jekyll-seo-tag
   - jekyll-sitemap
+  - jekyll-paginate
+  - jekyll-archives  # 카테고리 및 태그 자동 생성을 위한 핵심 플러그인
+
+# Chirpy 아카이브 자동 생성 설정
+jekyll-archives:
+  enabled: [categories, tags]
+  layouts:
+    category: category
+    tag: tag
+  permalinks:
+    category: /categories/:name/
+    tag: /tags/:name/
 
 exclude:
   - Gemfile
@@ -53,5 +67,3 @@ exclude:
   - node_modules
   - vendor 
   
-# 미래 날짜로 작성된 게시글도 메인 목록에 즉시 노출하도록 설정
-future: true
