@@ -51,4 +51,7 @@ exclude:
   - Gemfile
   - Gemfile.lock
   - node_modules
-  - vendor
+  - vendor 
+  
+# 미래 날짜로 작성된 게시글도 메인 목록에 즉시 노출하도록 설정
+future: true
