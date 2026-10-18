@@ -1,540 +1,375 @@
 ---
-masthead_title: "봄 - La bohème by @haanss"
-# title: "봄 - La bohème by @haanss"
+masthead_title: "La bohème by @haanss"
+# title: "La bohème by @haanss"
 layout: splash
 author_profile: false
 ---
 
-<!-- 1. 지킬(Liquid) 변수 설정: 3개의 슬라이드 데이터 추출 -->
-{% assign post1 = site.posts[0] %}
-{% assign img1 = post1.header.overlay_image | default: post1.teaser | default: '/assets/images/default-hero.jpg' %}
-
-{% assign total_posts = site.posts.size %}
-{% assign recent_max = total_posts | at_most: 50 %}
-
-<!-- 빌드 시간을 활용한 랜덤 숫자 생성 (최근 50개 중) -->
-{% assign rand2 = site.time | date: "%s" | modulo: recent_max %}
-{% if rand2 == 0 %}{% assign rand2 = 1 %}{% endif %}
-{% assign post2 = site.posts[rand2] | default: site.posts[1] %}
-{% assign img2 = post2.header.overlay_image | default: post2.teaser | default: '/assets/images/default-hero.jpg' %}
-
-<!-- 빌드 시간을 활용한 랜덤 숫자 생성 (전체 중) -->
-{% assign rand3 = site.time | date: "%N" | modulo: total_posts %}
-{% if rand3 == 0 or rand3 == rand2 %}{% assign rand3 = 2 %}{% endif %}
-{% assign post3 = site.posts[rand3] | default: site.posts[2] %}
-{% assign img3 = post3.header.overlay_image | default: post3.teaser | default: '/assets/images/default-hero.jpg' %}
-
-
-<!-- 2. CSS 스타일 정의 -->
+<!-- 1. 커스텀 스타일 (CSS) -->
 <style>
-  .custom-hero-carousel {
-    position: relative;
-    width: 100vw;
-    left: 50%;
-    right: 50%;
-    margin-left: -50vw;
-    margin-right: -50vw;
-    margin-bottom: 2rem;
-    background-color: #000000;
+  .portal-wrapper { font-family: 'Apple SD Gothic Neo', sans-serif; margin-top: 30px; }
+
+  /* 카루셀 하단 정렬 완벽 고정 및 링크 속성 초기화 */
+  .swiper { width: 100%; height: 450px; border-radius: 16px; margin-bottom: 40px; overflow: hidden; background: #111; position: relative; }
+  .swiper-slide { padding: 0; color: white; background-size: cover; background-position: center; position: relative; display: block; text-decoration: none !important; cursor: pointer; }
+  
+  .featured-content { position: absolute; bottom: 60px; left: 50px; max-width: 60%; z-index: 2; text-align: left; }
+  .featured-tag { font-size: 0.8rem; font-weight: bold; letter-spacing: 2px; color: #eee !important; margin-bottom: 10px; }
+  
+  /* 타이틀 2줄 고정 */
+  .featured-title { 
+    font-size: 2.2rem; 
+    font-weight: bold; 
+    line-height: 1.2; 
+    height: 5.28rem;
+    margin: 0; 
+    color: #fff !important; 
+    border: none !important; 
+    display: -webkit-box; 
+    -webkit-line-clamp: 2; 
+    -webkit-box-orient: vertical; 
     overflow: hidden; 
+    text-overflow: ellipsis; 
+  }
+  
+  .featured-divider { width: 100%; height: 1px; background: rgba(255, 255, 255, 0.2); margin: 16px 0; }
+  .featured-meta { font-size: 0.95rem; color: #fff !important; opacity: 0.8; }
+  
+  .slide-overlay { 
+    position: absolute; top:0; left:0; width: 100%; height: 100%; 
+    background: 
+      linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.1) 60%),
+      linear-gradient(to right, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 50%); 
+    z-index: 1; 
   }
 
-  .carousel-track {
-    display: flex;
-    width: 300%; 
-    height: 100%;
-    transition: transform 0.6s ease-in-out; 
-  }
+  /* 4열 큐레이션 그리드 */
+  .curation-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+  .curation-card { display: flex; flex-direction: column; background: #fff; border-radius: 16px; overflow: hidden; text-decoration: none !important; color: inherit; transition: transform 0.2s ease-in-out; position: relative; border: 1px solid #f0f0f0; min-height: 450px; }
+  .curation-card:hover { transform: translateY(-8px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); }
+  
+  /* 이미지 래퍼를 1:1 정사각형 비율로 설정 */
+  .card-img-wrap { width: 100%; aspect-ratio: 1 / 1; height: auto; overflow: hidden; background: #f8f8f8; display: flex; align-items: center; justify-content: center; position: relative; }
+  .card-img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.5s ease-in-out; }
+  
+  .card-info { padding: 20px; display: flex; flex-direction: column; flex-grow: 1; position: relative; box-sizing: border-box; width: 100%; }
+  .card-category { font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px; letter-spacing: 1px; }
+  
+  /* 카드 내부 페이드(Fade) 효과용 */
+  .fade-text { transition: opacity 0.5s ease-in-out; opacity: 1; }
+  .fade-out { opacity: 0 !important; pointer-events: none; }
 
-  .carousel-slide {
-    width: 33.3333%;
-    position: relative;
-    display: flex;
-    align-items: center; 
-  }
+  .card-title { font-size: 1.05rem; font-weight: bold; margin: 0 0 10px 0; line-height: 1.4; font-family: sans-serif; color: #111; height: 2.8rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .card-desc { font-size: 0.8rem; color: #888; margin-top: auto; display: flex; justify-content: space-between; align-items: center; }
+  
+  /* NEW 우측 상단 뱃지 */
+  .badge { position: absolute; top: 15px; right: 15px; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; color: white; z-index: 3; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: opacity 0.5s ease-in-out; }
+  .badge-blue { background: #1a73e8; }
+  .badge-gold { background: #c5a059; }
+  .badge-pink { background: #d81b60; }
+  .badge-black { background: #111; }
 
-  .carousel-slide::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-image: var(--bg-img);
-    background-size: cover;
-    background-position: center;
-    opacity: 1; 
-    filter: blur(40px);
-    transform: scale(1.15);
-    z-index: 1;
-  }
+  /* 랜덤 순환 정보 상태 뱃지 (RECENT, EDITOR'S PICK, ARCHIVE) */
+  .status-badge { font-size: 0.65rem; padding: 3px 6px; border-radius: 4px; background: rgba(0,0,0,0.06); color: #666; font-weight: bold; text-transform: uppercase; }
 
-  .custom-hero-inner {
-    position: relative;
-    z-index: 2;
-    width: 100%;
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 0 1em;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 8%;
-  }
+  /* 1. FILM 카드 스타일 (그라데이션 박스 높이를 늘려 제목 2줄 잘림 방지) */
+  .card-film-style { border: none; min-height: 450px; }
+  .card-film-style .card-img-wrap { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+  .card-film-style .card-info { position: absolute; bottom: 0; left: 0; width: 100%; z-index: 2; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 60%, rgba(0,0,0,0) 100%); padding: 100px 20px 20px 20px; box-sizing: border-box; height: 260px; }
+  .card-film-style .card-category { color: #ddd; }
+  .card-film-style .card-title { color: #fff; }
+  .card-film-style .card-desc { color: #aaa; margin-top: 0; }
+  .card-film-style .status-badge { background: rgba(255,255,255,0.2); color: #fff; }
 
-  .custom-hero-text { 
-    flex: 1.3; 
-    text-align: left; 
-    align-self: flex-start;
-  }
+  /* 2. MUSIC 카드 스타일 (배경 연회색, 이미지 80%) */
+  .card-music-style .card-img-wrap { background: #f0f0f0; aspect-ratio: 1 / 1; }
+  .card-music-style .card-img { width: 80%; height: 80%; border-radius: 4px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); object-fit: cover; aspect-ratio: 1 / 1; }
 
-  .custom-hero-category {
-    display: inline-block;
-    font-size: 1rem;
-    font-weight: 700;
-    color: #dd3030; 
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 5px;
-    text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.8); 
-  }
+  /* 3. BOOK 카드 스타일 */
+  .card-book-style { border: none; background: #fdf6e9; min-height: 450px; }
+  .card-book-style .card-img-wrap { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.2; background: #000; transition: opacity 0.3s ease-in-out; }
+  .card-book-style:hover .card-img-wrap { opacity: 0.7; }
+  .card-book-style .card-info { position: relative; z-index: 2; display: flex; flex-direction: column; text-align: center; height: 100%; box-sizing: border-box; padding: 20px; }
+  .card-book-style .book-center-wrap { margin: auto 0; width: 100%; } 
+  .card-book-style .card-category { margin-bottom: 15px; }
+  .card-book-style .card-title { font-size: 1.2rem; margin: 0; height: auto; display: block; }
+  .card-book-style .card-desc { margin-top: auto; width: 100%; justify-content: space-between; gap: 8px; } 
 
-  .custom-hero-text h1 {
-    font-size: 2rem; margin-bottom: 1rem; color: #ffffff;
-    line-height: 1.3; font-weight: 800; letter-spacing: -0.5px;
-    text-shadow: 0px 2px 10px rgba(0, 0, 0, 0.9);
-  }
-
-  .custom-hero-title-link {
-    color: #ffffff !important;
-    text-decoration: none !important;
-    transition: opacity 0.2s ease;
-  }
-  .custom-hero-title-link:hover {
-    opacity: 0.85;
-  }
-
-  .custom-hero-text p {
-    font-size: 1.15rem; line-height: 1.6; margin-bottom: 2rem; color: #ffffff;
-    text-shadow: 0px 1px 6px rgba(0, 0, 0, 0.8);
-  }
-
-  .custom-hero-btn {
-    display: inline-block; padding: 12px 25px; background-color: transparent;
-    color: #ffffff !important; border: 2px solid #ffffff; border-radius: 5px;
-    text-decoration: none; font-weight: bold; transition: all 0.3s ease;
-    text-shadow: 0px 1px 3px rgba(0,0,0,0.8); box-shadow: 0px 2px 5px rgba(0,0,0,0.5);
-  }
-  .custom-hero-btn:hover {
-    background-color: #ffffff; color: #222222 !important; text-shadow: none;
-  }
-
-  .custom-hero-visual {
-    flex: 0.7; display: flex; justify-content: flex-end;
-    align-items: flex-start;
-    transform: translateX(-30px); 
-  }
-
-  .custom-hero-visual a {
-    display: block;
-    width: 100%;
-    max-width: 380px;
-  }
-
-  .cd-case-img {
-    width: 100%; 
-    max-width: 380px; 
-    aspect-ratio: 7 / 10; 
-    object-fit: cover;
-    border-radius: 5px; 
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); 
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-
-  .custom-hero-visual a:hover .cd-case-img {
-    transform: scale(1.02);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
-  }
-
-  .carousel-arrow {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%) scaleX(0.5);
-    background: transparent;
-    color: #ffffff;
-    border: none;
-    font-size: 5rem;
-    font-weight: 300;
-    cursor: pointer;
-    z-index: 10;
-    padding: 1rem;
-    opacity: 0.2; 
-    transition: opacity 0.3s ease;
-  }
-  .carousel-arrow:hover { opacity: 1; }
-
-  @media (min-width: 1280px) {
-    .carousel-arrow.left { left: calc((100vw - 1280px) / 10); }
-    .carousel-arrow.right { right: calc((100vw - 1280px) / 10); }
-  }
-  @media (max-width: 1279px) {
-    .carousel-arrow.left { left: 1vw; }
-    .carousel-arrow.right { right: 1vw; }
-  }
-
-  .carousel-dots {
-    position: absolute; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
-    display: flex; gap: 8px; z-index: 10;
-  }
-  .dot {
-    width: 10px; height: 10px; background-color: rgba(255, 255, 255, 0.5);
-    border-radius: 50%; cursor: pointer; transition: 0.3s;
-  }
-  .dot.active { background-color: #ffffff; transform: scale(1.2); }
-
-  /* 🌟 데스크톱 전용 스타일 (769px 이상일 때만 높이 680px 고정) 🌟 */
-  @media (min-width: 769px) {
-    .custom-hero-carousel {
-      height: 680px;
-    }
-    .custom-hero-text {
-      margin-top: 60px;
-    }
-  }
-
-  /* 🌟 모바일 반응형 스타일 (상하/좌우 여백 축소 및 포스터 확대) 🌟 */
-  @media (max-width: 768px) {
-    .custom-hero-carousel {
-      height: auto;
-    }
-    .carousel-slide {
-      padding: 1.5rem 0 2rem 0; /* 🌟 상하 여백 50% 축소 */
-    }
-    .custom-hero-inner { 
-      flex-direction: column; 
-      padding: 0 0.8em; /* 🌟 좌우 여백 축소로 포스터 가로폭 확보 */
-      align-items: center; 
-    }
-    .custom-hero-text { 
-      order: 2; 
-      text-align: center; 
-      margin-top: 0;
-      width: 100%;
-    }
-    .custom-hero-text h1 {
-      font-size: 1.35rem;
-      margin-bottom: 0.5rem;
-    }
-    .custom-hero-text p {
-      font-size: 0.95rem;
-      margin-bottom: 1rem; /* 🌟 요약문 아래 여백 감소 */
-    }
-    .custom-hero-visual { 
-      order: 1; 
-      justify-content: center; 
-      margin-bottom: 0.8rem; /* 🌟 포스터와 텍스트 사이 여백 축소 */
-      transform: translateX(0);
-      width: 100%;
-    }
-    .custom-hero-visual a {
-      max-width: 280px; /* 🌟 포스터 크기 확대 (기존 240px -> 280px) */
-    }
-    .cd-case-img {
-      max-width: 280px;
-    }
-    .carousel-dots {
-      bottom: 0.5rem; /* 🌟 하단 도트 여백 축소 */
-    }
+  @media (max-width: 1024px) { .curation-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 768px) { 
+    .curation-grid { grid-template-columns: 1fr; } 
+    .swiper { height: 350px; } 
+    .featured-title { font-size: 1.8rem; height: 4.32rem; } 
+    .featured-content { max-width: 100%; left: 30px; bottom: 40px; } 
   }
 </style>
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
 
-<!-- 3. HTML 카루셀 구조 -->
-<div class="custom-hero-carousel">
-  <div class="carousel-track" id="track">
-    
-    <!-- 슬라이드 1 -->
-    <div class="carousel-slide" style="--bg-img: url('{{ img1 | relative_url }}')">
-      <div class="custom-hero-inner">
-        <div class="custom-hero-text">
-          {% if post1.categories.size > 1 %}
-            <span class="custom-hero-category">{{ post1.categories[0] }}/{{ post1.categories[1] }}</span>
-          {% elsif post1.categories.size > 0 %}
-            <span class="custom-hero-category">{{ post1.categories[0] }}</span>
-          {% endif %}
-          
-          <h1>
-            <a href="{{ post1.url | relative_url }}" class="custom-hero-title-link">{{ post1.title }}</a>
-          </h1>
-          <p>{{ post1.excerpt | strip_html | truncate: 100 }}</p>
-          <a href="{{ post1.url | relative_url }}" class="custom-hero-btn">Read more</a>
-        </div>
-        <div class="custom-hero-visual">
-          <a href="{{ post1.url | relative_url }}">
-            <img src="{{ img1 | relative_url }}" alt="{{ post1.title }}" class="cd-case-img">
-          </a>
-        </div>
-      </div>
-    </div>
 
-    <!-- 슬라이드 2 -->
-    <div class="carousel-slide" style="--bg-img: url('{{ img2 | relative_url }}')">
-      <div class="custom-hero-inner">
-        <div class="custom-hero-text">
-          {% if post2.categories.size > 1 %}
-            <span class="custom-hero-category">{{ post2.categories[0] }}/{{ post2.categories[1] }}</span>
-          {% elsif post2.categories.size > 0 %}
-            <span class="custom-hero-category">{{ post2.categories[0] }}</span>
-          {% endif %}
-          
-          <h1>
-            <a href="{{ post2.url | relative_url }}" class="custom-hero-title-link">{{ post2.title }}</a>
-          </h1>
-          <p>{{ post2.excerpt | strip_html | truncate: 100 }}</p>
-          <a href="{{ post2.url | relative_url }}" class="custom-hero-btn">Read more</a>
-        </div>
-        <div class="custom-hero-visual">
-          <a href="{{ post2.url | relative_url }}">
-            <img src="{{ img2 | relative_url }}" alt="{{ post2.title }}" class="cd-case-img">
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- 슬라이드 3 -->
-    <div class="carousel-slide" style="--bg-img: url('{{ img3 | relative_url }}')">
-      <div class="custom-hero-inner">
-        <div class="custom-hero-text">
-          {% if post3.categories.size > 1 %}
-            <span class="custom-hero-category">{{ post3.categories[0] }}/{{ post3.categories[1] }}</span>
-          {% elsif post3.categories.size > 0 %}
-            <span class="custom-hero-category">{{ post3.categories[0] }}</span>
-          {% endif %}
-          
-          <h1>
-            <a href="{{ post3.url | relative_url }}" class="custom-hero-title-link">{{ post3.title }}</a>
-          </h1>
-          <p>{{ post3.excerpt | strip_html | truncate: 100 }}</p>
-          <a href="{{ post3.url | relative_url }}" class="custom-hero-btn">Read more</a>
-        </div>
-        <div class="custom-hero-visual">
-          <a href="{{ post3.url | relative_url }}">
-            <img src="{{ img3 | relative_url }}" alt="{{ post3.title }}" class="cd-case-img">
-          </a>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <button class="carousel-arrow left" id="btnPrev">&lt;</button>
-  <button class="carousel-arrow right" id="btnNext">&gt;</button>
+<!-- 2. HTML 뼈대 -->
+<div class="portal-wrapper">
   
-  <div class="carousel-dots">
-    <span class="dot active" data-index="0"></span>
-    <span class="dot" data-index="1"></span>
-    <span class="dot" data-index="2"></span>
-  </div>
-</div>
-
-
-<!-- 4. 슬라이드 제어 자바스크립트 -->
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const track = document.getElementById('track');
-    const dots = document.querySelectorAll('.dot');
-    let currentIndex = 0;
-    let timer;
-
-    function goToSlide(index) {
-      if (index < 0) index = 2; 
-      if (index > 2) index = 0; 
-      
-      currentIndex = index;
-      track.style.transform = `translateX(-${currentIndex * 33.3333}%)`;
-      
-      dots.forEach(dot => dot.classList.remove('active'));
-      dots[currentIndex].classList.add('active');
-    }
-
-    document.getElementById('btnNext').addEventListener('click', () => {
-      goToSlide(currentIndex + 1);
-      resetTimer(); 
-    });
-    
-    document.getElementById('btnPrev').addEventListener('click', () => {
-      goToSlide(currentIndex - 1);
-      resetTimer();
-    });
-
-    dots.forEach((dot, index) => {
-      dot.addEventListener('click', () => {
-        goToSlide(index);
-        resetTimer();
-      });
-    });
-
-    function startTimer() {
-      timer = setInterval(() => goToSlide(currentIndex + 1), 5000);
-    }
-    
-    function resetTimer() {
-      clearInterval(timer);
-      startTimer();
-    }
-
-    startTimer(); 
-  });
-</script>
-
-<style>
-  .page__inner-wrap { max-width: 100% !important; padding-left: 0 !important; padding-right: 0 !important; }
-  .content-container { max-width: 1280px; margin: 0 auto; padding: 0 1em; }
-
-  /* 랜덤 가사 영역 CSS */
-  .custom-intro { 
-    text-align: center; 
-    padding: 30px 20px 20px; 
-    margin-bottom: 10px; 
-  }
-  
-  .custom-intro .lyric-text { 
-    font-style: italic; 
-    font-size: 1.2rem; 
-    color: #333; 
-    margin-bottom: 15px; 
-    font-family: 'Noto Serif KR', 'Nanum Myeongjo', 'Batang', '바탕', serif;
-  }
-  
-  .custom-intro .lyric-artist { 
-    font-size: 0.95rem; 
-    color: #666; 
-  }
-
-  /* 피처 로우 영역 CSS */
-  .feature-row { display: flex; flex-direction: column; align-items: flex-start; gap: 40px; padding: 30px 0; border-bottom: 1px solid #f2f3f3; }
-  .feature-row:last-of-type { border-bottom: none; }
-  
-  @media (min-width: 768px) {
-    .feature-row { flex-direction: row; }
-    .feature-row.reverse { flex-direction: row-reverse; } 
-    .feature-row.reverse .feature-text { text-align: right; align-items: flex-end; }
-  }
-  
-  .feature-img { flex: 1; width: 100%; }
-  .feature-img img { width: 100%; height: auto; border-radius: 4px; display: block; }
-  
-  .feature-text { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; padding: 0; }
-  .feature-text h2 { margin-top: 0; font-size: 1.5rem; font-weight: bold; margin-bottom: 15px; }
-  .feature-text p { color: #494e52; line-height: 1.6; margin-bottom: 25px; }
-  
-  /* 무한 스크롤 갤러리 영역 CSS */
-  .custom-gallery-grid { display: grid; gap: 24px; margin-top: 2em; grid-template-columns: repeat(1, 1fr); }
-  @media (min-width: 768px) { .custom-gallery-grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (min-width: 1024px) { .custom-gallery-grid { grid-template-columns: repeat(4, 1fr); } }
-  .custom-gallery-item { position: relative; overflow: hidden; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-  .custom-gallery-item img { width: 100%; aspect-ratio: 7 / 10; object-fit: cover; display: block; transition: transform 0.3s ease; }
-  .gallery-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.7); color: #ffffff; padding: 15px; text-align: center; font-weight: bold; font-size: 1rem; transform: translateY(100%); transition: transform 0.3s ease; pointer-events: none; }
-  .custom-gallery-item:hover img { transform: scale(1.05); }
-  .custom-gallery-item:hover .gallery-overlay { transform: translateY(0); }
-  .hidden-item { display: none; }
-</style>
-
-<div class="content-container">
-
-  <div class="custom-intro">
-    <div class="lyric-text" id="random-lyric-text">"..."</div>
-    <div class="lyric-artist" id="random-lyric-artist">- -</div>
-  </div>
-  
-  <hr style="border: 0; border-top: 1px solid #f2f3f3; margin: 0;">
-
-  <div style="margin-top: 10px;"> 
-    {% for post in site.posts limit:2 offset:1 %}
-      <div class="feature-row {% if forloop.index == 2 %}reverse{% endif %}">
-        <div class="feature-img">
-          <a href="{{ post.url }}">
-            <img src="{{ post.teaser }}" alt="{{ post.title }}">
-          </a>
-        </div>
-        <div class="feature-text">
-          <h2>{{ post.title }}</h2>
-          <p>{{ post.excerpt | strip_html | truncatewords: 30 }}</p>
-          <a href="{{ post.url }}" class="btn btn--danger">Read More</a>
-        </div>
-      </div>
-    {% endfor %}
-  </div>
-
-  <h2 style="text-align: center; margin-top: 40px; margin-bottom: 20px;">the Poster Collection</h2> 
-  
-  <div class="custom-gallery-grid" id="gallery-grid">
-    {% for post in site.posts offset:3 %}
-      {% if post.teaser %}
-        <div class="custom-gallery-item gallery-item-card">
-          <a href="{{ post.url }}">
-            <img src="{{ post.teaser }}" alt="{{ post.title }}">
-            <div class="gallery-overlay">{{ post.title }}</div>
-          </a>
-        </div>
+  <!-- 상단 피처드 카루셀 -->
+  <div class="swiper mySwiper">
+    <div class="swiper-wrapper">
+      {% for post in site.posts limit:3 %}
+      {% assign bg_image = post.header.overlay_image | default: post.header.image | default: post.image %}
+      {% if bg_image == nil or bg_image == empty %}
+        {% assign bg_image = "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=1600&q=80" %}
       {% endif %}
-    {% endfor %}
+      
+      <a href="{{ post.url | relative_url }}" class="swiper-slide" style="background-image: url('{{ bg_image | relative_url }}');">
+        <div class="slide-overlay"></div>
+        <div class="featured-content">
+          <div class="featured-tag">{% if forloop.first %}LATEST ARTICLE{% else %}EDITOR'S PICK{% endif %}</div>
+          <h2 class="featured-title">{{ post.title }}</h2>
+          <div class="featured-divider"></div>
+          <div class="featured-meta">{{ post.date | date: "%Y. %m. %d." }} • {{ post.categories | first | default: "Blog" }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    <div class="swiper-button-next" style="color: white;"></div>
+    <div class="swiper-button-prev" style="color: white;"></div>
   </div>
 
-  <div id="scroll-sentinel" style="height: 20px; margin-top: 40px; margin-bottom: 40px;"></div>
+  <div class="curation-grid">
+    
+    <!-- TECH 카드 -->
+    {% assign tech_post = site.categories.Tech | first %}
+    {% if tech_post %}
+      {% assign tech_image = tech_post.header.overlay_image | default: tech_post.header.image | default: tech_post.image %}
+      {% if tech_image == nil or tech_image == empty %}
+        {% assign tech_image = "https://images.unsplash.com/photo-1517336714731-489689fd1ca8" %}
+      {% endif %}
+      
+      <a href="{{ tech_post.url | relative_url }}" class="curation-card">
+        <div class="badge badge-pink">NEW</div>
+        <div class="card-img-wrap"><img src="{{ tech_image | relative_url }}" class="card-img"></div>
+        <div class="card-info">
+          <div class="card-category">TECH</div>
+          <h3 class="card-title">{{ tech_post.title }}</h3>
+          <div class="card-desc">
+            <span>{{ tech_post.date | date: "%Y. %m. %d." }}</span>
+            <span class="status-badge">RECENT</span>
+          </div>
+        </div>
+      </a>
+    {% else %}
+      <a href="#" class="curation-card">
+        <div class="badge badge-pink">NEW</div>
+        <div class="card-img-wrap"><img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8" class="card-img"></div>
+        <div class="card-info">
+          <div class="card-category">TECH</div>
+          <h3 class="card-title">첫 번째 TECH 글을 작성해 주세요</h3>
+          <div class="card-desc">-</div>
+        </div>
+      </a>
+    {% endif %}
 
+    <!-- FILM 카드 -->
+    <a href="#" class="curation-card card-film-style" id="card-film">
+      <div class="badge badge-gold fade-text" id="top-badge-film">NEW</div>
+      <div class="card-img-wrap"><img src="" class="card-img fade-text" id="img-film" style="display:none;"></div>
+      <div class="card-info">
+        <div class="card-category">FILM</div>
+        <h3 class="card-title fade-text" id="title-film">데이터 불러오는 중...</h3>
+        <div class="card-desc">
+          <span class="fade-text" id="desc-film">Loading...</span>
+          <span class="status-badge fade-text" id="badge-film">RECENT</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- MUSIC 카드 -->
+    <a href="#" class="curation-card card-music-style" id="card-music">
+      <div class="badge badge-blue fade-text" id="top-badge-music">NEW</div>
+      <div class="card-img-wrap"><img src="" class="card-img fade-text" id="img-music" style="display:none;"></div>
+      <div class="card-info">
+        <div class="card-category">MUSIC</div>
+        <h3 class="card-title fade-text" id="title-music">데이터 불러오는 중...</h3>
+        <div class="card-desc">
+          <span class="fade-text" id="desc-music">Loading...</span>
+          <span class="status-badge fade-text" id="badge-music">RECENT</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- BOOK 카드 -->
+    <a href="#" class="curation-card card-book-style" id="card-book">
+      <div class="badge badge-black fade-text" id="top-badge-book">NEW</div>
+      <div class="card-img-wrap"><img src="" class="card-img fade-text" id="img-book" style="display:none;"></div>
+      <div class="card-info">
+        
+        <div class="book-center-wrap">
+          <div class="card-category">BOOK</div>
+          <h3 class="card-title fade-text" id="title-book">데이터 불러오는 중...</h3>
+        </div>
+
+        <div class="card-desc">
+          <span class="fade-text" id="desc-book">Loading...</span>
+          <span class="status-badge fade-text" id="badge-book">RECENT</span>
+        </div>
+
+      </div>
+    </a>
+    
+  </div>
 </div>
 
-<!-- 자바스크립트 영역 -->
+<!-- 3. 자바스크립트 -->
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
-    
-    const lyricsList = [
-      {% for lyric in site.data.lyrics %}
-        { text: "{{ lyric.text }}", artist: "{{ lyric.artist }}" }{% unless forloop.last %},{% endunless %}
-      {% endfor %}
-    ];
+  var swiper = new Swiper(".mySwiper", {
+    navigation: { nextEl: ".swiper-button-next", prevEl: ".swiper-button-prev" },
+    loop: true,
+    autoplay: { delay: 5000, disableOnInteraction: false }
+  });
 
-    if (lyricsList.length > 0) {
-      const randomIndex = Math.floor(Math.random() * lyricsList.length);
-      const selectedLyric = lyricsList[randomIndex];
+  // 카테고리별 글 데이터 및 타이머 저장소
+  const rollingData = {
+    film: { posts: [], currentIndex: 0, timeoutId: null },
+    music: { posts: [], currentIndex: 0, timeoutId: null },
+    book: { posts: [], currentIndex: 0, timeoutId: null }
+  };
 
-      document.getElementById('random-lyric-text').innerHTML = '"' + selectedLyric.text + '"';
-      document.getElementById('random-lyric-artist').innerHTML = "- " + selectedLyric.artist;
-    }
+  function fetchJekyllFeed(url, type) {
+    fetch(url)
+      .then(response => {
+        if (!response.ok) throw new Error('네트워크 응답 에러');
+        return response.text();
+      })
+      .then(str => new window.DOMParser().parseFromString(str, "text/xml"))
+      .then(data => {
+        const entries = Array.from(data.querySelectorAll("entry"));
+        
+        if (entries.length > 0) {
+          const extractedPosts = [];
 
-    const items = document.querySelectorAll('.gallery-item-card');
-    const sentinel = document.getElementById('scroll-sentinel');
-    let currentVisible = 16;
-    const loadStep = 16;
+          // 1. RECENT (가장 최신 글)
+          extractedPosts.push({ ...parseEntry(entries[0], url), label: 'RECENT', isLatest: true });
 
-    for (let i = 0; i < items.length; i++) {
-      if (i >= currentVisible) {
-        items[i].classList.add('hidden-item');
-      }
-    }
+          // 2. EDITOR'S PICK
+          if (entries.length > 1) {
+            const range10 = entries.slice(1, Math.min(10, entries.length));
+            const randIdx = Math.floor(Math.random() * range10.length);
+            extractedPosts.push({ ...parseEntry(range10[randIdx], url), label: "EDITOR'S PICK", isLatest: false });
+          }
 
-    if (items.length <= currentVisible && sentinel) {
-      sentinel.style.display = 'none';
-    } else if (sentinel) {
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            let shown = 0;
-            for (let i = 0; i < items.length; i++) {
-              if (items[i].classList.contains('hidden-item') && shown < loadStep) { 
-                items[i].classList.remove('hidden-item');
-                shown++;
-                currentVisible++;
-              }
-            }
-            if (currentVisible >= items.length) {
-              observer.unobserve(sentinel);
-              sentinel.style.display = 'none';
+          // 3. ARCHIVE
+          if (entries.length > 10) {
+            const range30 = entries.slice(10, Math.min(30, entries.length));
+            const randIdx = Math.floor(Math.random() * range30.length);
+            extractedPosts.push({ ...parseEntry(range30[randIdx], url), label: 'ARCHIVE', isLatest: false });
+          } else if (entries.length > 2 && extractedPosts.length < 3) {
+            const usedIndexes = [0, entries.indexOf(entries.find(e => e.querySelector("title").textContent === extractedPosts[1]?.title))];
+            const remains = entries.filter((_, idx) => !usedIndexes.includes(idx));
+            if (remains.length > 0) {
+              const randIdx = Math.floor(Math.random() * remains.length);
+              extractedPosts.push({ ...parseEntry(remains[randIdx], url), label: 'ARCHIVE', isLatest: false });
             }
           }
-        });
-      }, {
-        rootMargin: "0px 0px 300px 0px" 
+
+          rollingData[type].posts = extractedPosts;
+          updateCardDOM(type, extractedPosts[0]);
+          
+          if (extractedPosts.length > 1) {
+            startCardRolling(type);
+          }
+        }
+      })
+      .catch(error => {
+        console.error(type + ' 에러:', error);
       });
-      observer.observe(sentinel);
+  }
+
+  function parseEntry(entry, originUrl) {
+    const title = entry.querySelector("title").textContent;
+    const link = entry.querySelector("link").getAttribute("href");
+    const published = entry.querySelector("published") || entry.querySelector("updated");
+    const pubDate = new Date(published.textContent).toLocaleDateString();
+    
+    let imgUrl = null;
+    const content = entry.querySelector("content");
+    if (content) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = content.textContent;
+      const img = tempDiv.querySelector('img');
+      if (img) {
+        imgUrl = img.getAttribute('src');
+        if (imgUrl && !imgUrl.startsWith('http')) {
+          const urlObj = new URL(originUrl);
+          imgUrl = urlObj.origin + (imgUrl.startsWith('/') ? '' : '/') + imgUrl;
+        }
+      }
     }
-  });
+    return { title, link, pubDate, imgUrl };
+  }
+
+  function updateCardDOM(type, postData) {
+    const card = document.getElementById('card-' + type);
+    const titleEl = document.getElementById('title-' + type);
+    const descEl = document.getElementById('desc-' + type);
+    const imgEl = document.getElementById('img-' + type);
+    const badgeEl = document.getElementById('badge-' + type);
+    const topBadgeEl = document.getElementById('top-badge-' + type);
+
+    titleEl.classList.add('fade-out');
+    descEl.classList.add('fade-out');
+    badgeEl.classList.add('fade-out');
+    if (imgEl) imgEl.classList.add('fade-out');
+    if (topBadgeEl) topBadgeEl.classList.add('fade-out');
+
+    setTimeout(() => {
+      card.href = postData.link;
+      titleEl.innerText = postData.title;
+      descEl.innerText = postData.pubDate;
+      badgeEl.innerText = postData.label;
+
+      if (postData.imgUrl) {
+        imgEl.src = postData.imgUrl;
+        imgEl.style.display = 'block';
+        imgEl.classList.remove('fade-out');
+      } else if (imgEl) {
+        imgEl.style.display = 'none';
+      }
+
+      if (topBadgeEl && postData.isLatest) {
+        topBadgeEl.classList.remove('fade-out');
+      }
+
+      titleEl.classList.remove('fade-out');
+      descEl.classList.remove('fade-out');
+      badgeEl.classList.remove('fade-out');
+    }, 500);
+  }
+
+  function scheduleNextRolling(type) {
+    const randomDelay = Math.floor(Math.random() * 1901) + 4000;
+    rollingData[type].timeoutId = setTimeout(() => {
+      const data = rollingData[type];
+      data.currentIndex = (data.currentIndex + 1) % data.posts.length;
+      updateCardDOM(type, data.posts[data.currentIndex]);
+      scheduleNextRolling(type);
+    }, randomDelay);
+  }
+
+  function startCardRolling(type) {
+    const card = document.getElementById('card-' + type);
+    
+    scheduleNextRolling(type);
+
+    card.addEventListener('mouseenter', () => {
+      clearTimeout(rollingData[type].timeoutId);
+    });
+
+    card.addEventListener('mouseleave', () => {
+      scheduleNextRolling(type);
+    });
+  }
+
+  fetchJekyllFeed('https://bom.la-bohe.me/feed.xml', 'film');
+  fetchJekyllFeed('https://umm.la-bohe.me/feed.xml', 'music');
+  fetchJekyllFeed('https://ssm.la-bohe.me/feed.xml', 'book');
 </script>
